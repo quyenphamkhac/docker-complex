@@ -1,0 +1,20 @@
+services:
+  - docker
+
+before_install:
+  - docker build -t khacquyen1996/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true khacquyen1996/react-test npm run test
+
+after_success:
+  - docker build -t khacquyen1996/multi-client ./client
+  - docker build -t khacquyen1996/multi-nginx ./nginx
+  - docker build -t khacquyen1996/multi-server ./server
+  - docker build -t khacquyen1996/multi-worker ./worker
+  # Take those images and push them to DockerHub
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push khacquyen1996/multi-client
+  - docker push khacquyen1996/multi-nginx
+  - docker push khacquyen1996/multi-server
+  - docker push khacquyen1996/multi-worker
